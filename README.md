@@ -1,6 +1,10 @@
-# gnss-ml2.0
+# GNSS-ML Project
+###### Using ML models to classify GNSS measurements as NLOS and LOS.
 
-## Setup a virtual environment
+### GNSS Dataset
+Data is available from here: https://www.tu-chemnitz.de/projekt/smartLoc/gnss_dataset.html.en#Datasets
+
+### Setup a virtual environment
 
 Following commands are for Windows. For macOS/Unix and additional information: 
 https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#create-and-use-virtual-environments
