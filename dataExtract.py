@@ -3,31 +3,31 @@ import pandas as pd
 import numpy as np
 
 
-def extract_raw(filepath):
+def extract_raw(in_filepath, out_filepath, col_list):
     """
-    Extracts columns from the raw CSV and places them into a new CSV
-    Columns extracted: epoch, NovAtel Coordinates, Carrier-to-noise ratio, NLOS labels
-    :param filepath: file path of the orginal RXM-RAWX.csv file
-    :return:  None
+     Extracts columns from the raw CSV and places them into a new CSV
+    :param in_filepath: input csv filepath
+    :param out_filepath: output csv filepath
+    :param col_list:  list of col indexes
+    :return: None
     """
 
-    with open(filepath, "r", newline="") as infile:
+    with open(in_filepath, "r", newline="") as infile:
         reader = csv.reader(infile, delimiter=";")
 
-        with open('proccessed_data/PotsdamerPlatz-RAWX.csv', "w", newline="") as outfile:
+        with open(out_filepath, "w", newline="") as outfile:
             writer = csv.writer(outfile, delimiter=",")
 
             for row in reader:
-                # 0 = GPSweek, 1 = GPSSeconds,
-                # 2 = GT Longitude [deg], 4 = Latitude (GT Lat) [deg]
-                # 28  = c/no, 33 = NLOS information
-                extract_row = [row[0], row[1], row[2], row[4], row[28], row[33]]
-                writer.writerow(extract_row)
+                extracted_row = []
+                for col in col_list:
+                    extracted_row.append(row[col])
+                writer.writerow(extracted_row)
 
-    print("\nExtraction completed. The selected columns have been saved to 'proccessed_data/PotsdamerPlatz-RAWX.csv'.\n")
+    print("\nExtraction completed. The selected columns have been saved to " + out_filepath + ".\n")
 
 
-def extract_coordinates(filepath, col, type):
+def get_coordinate_list(filepath, col, type):
     """
     Extracts a column from csv and places into a list
     :param filepath: path of csv file
@@ -47,7 +47,7 @@ def extract_coordinates(filepath, col, type):
     return alist
 
 
-def extract_NLOS(filepath, col):
+def get_nlos_label_list(filepath, col):
     """
     Extracts the NLOS labels from a csv and map them to the label names, store in a list
     :param filepath: path of CSV
@@ -63,6 +63,7 @@ def extract_NLOS(filepath, col):
             elif row[col] == '1':
                 alist.append('NLOS')
     return alist
+
 
 
 
