@@ -4,6 +4,12 @@ import numpy as np
 
 
 def extract_raw(filepath):
+    """
+    Extracts columns from the raw CSV and places them into a new CSV
+    Columns extracted: epoch, NovAtel Coordinates, Carrier-to-noise ratio, NLOS labels
+    :param filepath: file path of the orginal RXM-RAWX.csv file
+    :return:  None
+    """
 
     with open(filepath, "r", newline="") as infile:
         reader = csv.reader(infile, delimiter=";")
@@ -22,6 +28,13 @@ def extract_raw(filepath):
 
 
 def extract_coordinates(filepath, col, type):
+    """
+    Extracts a column from csv and places into a list
+    :param filepath: path of csv file
+    :param col: Columns of interest
+    :param type: The data type of stored data
+    :return:  list
+    """
 
     alist = []
     with open(filepath, "r", newline="") as file:
@@ -35,6 +48,12 @@ def extract_coordinates(filepath, col, type):
 
 
 def extract_NLOS(filepath, col):
+    """
+    Extracts the NLOS labels from a csv and map them to the label names, store in a list
+    :param filepath: path of CSV
+    :param col: The location of NLOS labels within the csv
+    :return: List of signal labels
+    """
     alist = []
     with open(filepath, "r", newline="") as file:
         reader = csv.reader(file, delimiter=",")

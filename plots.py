@@ -4,6 +4,10 @@ import pandas as pd
 
 
 def map_track():
+    """
+    Maps the dataset track and signal type (NLOS and LOS).
+    :return:None
+    """
     longitude = de.extract_coordinates('proccessed_data/PotsdamerPlatz-RAWX.csv', 2, float)
     latitude = de.extract_coordinates('proccessed_data/PotsdamerPlatz-RAWX.csv', 3, float)
     state = de.extract_coordinates('proccessed_data/PotsdamerPlatz-RAWX.csv', 5, int)
