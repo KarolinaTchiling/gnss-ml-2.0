@@ -8,18 +8,16 @@ def map_track():
     Maps the dataset track and signal type (NLOS and LOS).
     :return:None
     """
-    longitude = de.extract_coordinates('proccessed_data/PotsdamerPlatz-RAWX.csv', 2, float)
-    latitude = de.extract_coordinates('proccessed_data/PotsdamerPlatz-RAWX.csv', 3, float)
-    state = de.extract_coordinates('proccessed_data/PotsdamerPlatz-RAWX.csv', 5, int)
-    signal = de.extract_NLOS('proccessed_data/PotsdamerPlatz-RAWX.csv', 5)
-    assert len(longitude) == len(latitude) == len(signal) == len(state)
+    de.extract_raw('smartLoc_data/Berlin_PotsdamerPlatz/RXM-RAWX.csv',
+                   'proccessed_data/PotsdamerPlatz-coordinates.csv',
+                   [2, 4, 33])  # long, lat, NLOS label
 
-    df = pd.DataFrame({
-        'Longitude': longitude,
-        'Latitude': latitude,
-        'State': state,
-        'Signal': signal,
-    })
+    df = pd.read_csv('proccessed_data/PotsdamerPlatz-coordinates.csv')
+    df.columns = ['Longitude', 'Latitude', 'State']
+    df['Longitude'] = df['Longitude'].astype(float)
+    df['Latitude'] = df['Latitude'].astype(float)
+    df['State'] = df['State'].astype(int)
+    df['Signal'] = de.get_nlos_label_list('proccessed_data/PotsdamerPlatz-coordinates.csv', 2)
 
     # print(df.head())
 
