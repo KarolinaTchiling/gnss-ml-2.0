@@ -12,29 +12,32 @@ def main():
 
     # plt.map_track()
 
+    # extracts only the necessary columns from the raw data and creates a new csv
     # de.extract_raw('smartLoc_data/Berlin_PotsdamerPlatz/RXM-RAWX.csv',
     #                'proccessed_data/PotsdamerPlatz-RAWX.csv',
     #                [28, 29, 33])    # cno, pseudorange std, NLOS label
 
     # Convert csv to data frame
     df = pd.read_csv('proccessed_data/PotsdamerPlatz-RAWX.csv')
-    df = df.astype(float)
-    df.columns = ['cno', 'prStdev', 'NLOS']
-    df['NLOS'] = df['NLOS'].astype(int)
+    df = df.astype(float)                                           # convert rows to floats
+    df.columns = ['cno', 'prStdev', 'NLOS']                         # rename headers
+    df['NLOS'] = df['NLOS'].astype(int)                             # convert labels to ints
 
-    print(df.head().to_string())
+    print(df.head().to_string())         # output dataframe
 
-    X = df[['cno', 'prStdev']]      # features
-    y = df['NLOS'].to_numpy()       # target
-    # print(y)
+    X = df[['cno', 'prStdev']]      # isolate features =  carrier to noise and pseudorange stdev
+    y = df['NLOS'].to_numpy()       # isolate target = NLOS labels
 
-    # training set = 60% ; Validation set = 20% ; Testing set = 20%
+
+    # split data: training set = 60% ; Validation set = 20% ; Testing set = 20%
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=1)
 
+    # train random forest classifier
     rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
     rf_classifier.fit(X_train, y_train)
 
+    # run random forest classifier
     y_pred = rf_classifier.predict(X_test)
     # print(y_pred)
     # Accuracy
