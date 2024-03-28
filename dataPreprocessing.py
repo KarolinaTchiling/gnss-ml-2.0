@@ -46,10 +46,10 @@ def preprocessor(df):
     num_transformer = Pipeline(steps=[('scale', StandardScaler())])     # Scales
 
     # combines the cat and num transformer together and applies them to the correct columns
-    full_transformer = ColumnTransformer(transformers=[('cat', cat_transformer, cat_columns),
+    full_preprocessor = ColumnTransformer(transformers=[('cat', cat_transformer, cat_columns),
                                                        ('num', num_transformer, num_columns)],
                                          remainder="passthrough")
-    return full_transformer
+    return full_preprocessor
 
 
 def get_transformed_df(df):
