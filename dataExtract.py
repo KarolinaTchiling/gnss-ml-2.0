@@ -62,6 +62,8 @@ def get_nlos_label_list(filepath, col):
                 alist.append('LOS')
             elif row[col] == '1':
                 alist.append('NLOS')
+            elif row[col] == '#' :
+                alist.append('N/A')
     return alist
 
 
