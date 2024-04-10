@@ -9,14 +9,16 @@ import dataExtract as de
 import pandas as pd
 import numpy as np
 
-
-def get_df():
-    NLOS_labels = de.get_nlos_label_list('proccessed_data/test.csv', 2)
-    df = pd.read_csv('proccessed_data/test.csv')
-    df = df.astype(float)
-    df.columns = ['cno', 'prStdev', 'signal']
-    df['signal'] = NLOS_labels
-    return df
+# def numerical_preprocessor(df):
+#     num_columns =df.select_dtypes(include=[np.float64, np.int64]).columns
+#     num_transformer = Pipeline(steps=[('scale', StandardScaler())])  # Scales
+#
+#     transformer = ColumnTransformer(transformers=[('num', num_transformer, num_columns)])
+#     transformed_data = transformer.fit_transform(df)
+#     transformed_columns = transformer.get_feature_names_out()
+#     transformed_features = pd.DataFrame(transformed_data, columns=transformed_columns)
+#     print(transformed_features)
+#
 
 
 def preprocessor(df):
@@ -30,7 +32,7 @@ def preprocessor(df):
 
     Applies  transformation to all the columns of the dataset.
     @param df: dataframe
-    @return: A transformer (A pipeline of the transformation)
+    @return: A transformed df with the applied transformations
     """
 
     # Define the columns
@@ -49,14 +51,11 @@ def preprocessor(df):
     full_preprocessor = ColumnTransformer(transformers=[('cat', cat_transformer, cat_columns),
                                                        ('num', num_transformer, num_columns)],
                                          remainder="passthrough")
-    return full_preprocessor
 
-
-def get_transformed_df(df):
-    transformer = preprocessor(df)
-    transformed_data = transformer.fit_transform(df)
-    transformed_columns = transformer.get_feature_names_out()
+    transformed_data = full_preprocessor.fit_transform(df)
+    transformed_columns = full_preprocessor.get_feature_names_out()
     transformed_df = pd.DataFrame(transformed_data, columns=transformed_columns)
+
     return transformed_df
 
 
