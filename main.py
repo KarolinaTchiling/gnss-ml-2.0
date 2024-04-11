@@ -61,35 +61,19 @@ def main(transfored_df=None):
     print("\nTesting Set - " + str(((len(y_test)) / len(df)) * 100) + "%  (" + str(len(y_test)) + " data points)\n"
           + X_test.head().to_string()), print(y_test)
 
+    # ML TRAINING AND MODELING ---------------------------------------------------------------------------------------
 
-
-    # # # train random forest classifier
-    # rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
-    #
-    # rfc_model = Pipeline(steps=[('preprocessor', full_preprocessor), ('classifier', rf_classifier)])
-    #
-    # print(rfc_model)
-    #
-    # # train the model
-    # rfc_model.fit(X_train, y_train)
-    # # run the model
-    # y_pred = rfc_model.predict(X_test)
-
-
-    # rf_classifier.fit(X_train, y_train)
-    #
-    # #run random forest classifier
-    # y_pred = rf_classifier.predict(X_test)
-    # print(y_pred)
-
+    # train random forest classifier
+    rfc = RandomForestClassifier(n_estimators=100, random_state=42)     # initialize the model
+    rfc.fit(X_train, y_train)                                           # train the model
+    y_pred = rfc.predict(X_test)                                        # run the model
 
     # # Accuracy
-    # print("Accuracy:", accuracy_score(y_test, y_pred))
+    print("Accuracy:", accuracy_score(y_test, y_pred))
     #
     # # Classification report
     # print("Classification Report:")
     # print(classification_report(y_test, y_pred))
-
 
 
 
