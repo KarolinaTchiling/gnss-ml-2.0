@@ -57,12 +57,5 @@ When finished with installs, deactivate the virtual environment:
 
 	deactivate
 
-### Process Explained
-- DataExtract Module: 
-  - Creates a new csv from SmartLoc dataset which will include only required information for this study
-  - Extracts columns of data from a csv and stores them in a list
-- Plots Module:
-  - Plots graphs and maps
-- Main:
-  - Runs the ML modelling
+
 
