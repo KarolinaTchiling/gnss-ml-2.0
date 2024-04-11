@@ -3,22 +3,9 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split
-import dataExtract as de
 
 import pandas as pd
 import numpy as np
-
-# def numerical_preprocessor(df):
-#     num_columns =df.select_dtypes(include=[np.float64, np.int64]).columns
-#     num_transformer = Pipeline(steps=[('scale', StandardScaler())])  # Scales
-#
-#     transformer = ColumnTransformer(transformers=[('num', num_transformer, num_columns)])
-#     transformed_data = transformer.fit_transform(df)
-#     transformed_columns = transformer.get_feature_names_out()
-#     transformed_features = pd.DataFrame(transformed_data, columns=transformed_columns)
-#     print(transformed_features)
-#
 
 
 def feature_preprocessor(df):
