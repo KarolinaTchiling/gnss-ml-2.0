@@ -21,8 +21,9 @@ import numpy as np
 #
 
 
-def preprocessor(df):
+def feature_preprocessor(df):
     """
+    This preprocesses both categorical and numerical data (even though we only have numerical for now)
     Isolates the numerical and categorical columns.
     -   Processes the cat data: filling any missing data entries, converting string labels into
         label indices (these label indices are encoded using One-hot encoding to a binary vector with at most a
@@ -58,4 +59,7 @@ def preprocessor(df):
 
     return transformed_df
 
+
+def target_preprocessor(df):
+    return LabelEncoder().fit_transform(df['NLOS'])
 
