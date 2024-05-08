@@ -24,7 +24,30 @@ def extract_raw(in_filepath, out_filepath, col_list):
                     extracted_row.append(row[col])
                 writer.writerow(extracted_row)
 
-    print("\nExtraction completed. The selected columns have been saved to " + out_filepath + ".\n")
+    print("\nExtraction completed. The selected columns have been saved to " + out_filepath)
+
+
+def merge_csv(file_list):
+    dataframes = []
+    for file in file_list:
+        df = pd.read_csv(file)
+        dataframes.append(df)
+    combined_df = pd.concat(dataframes, ignore_index=True)
+    combined_df.to_csv('processed_data/merged.csv', index=False)
+
+    print("\nMerge completed. The selected columns have been saved to 'processed_data/merged.csv.")
+
+
+def balance_data(file):
+    df = pd.read_csv(file)
+    nlos_column = 'NLOS (0 == no, 1 == yes, # == No Information)'
+    nlos_rows = df[df[nlos_column] == '1'].sample(n=50000, random_state=np.random.RandomState())
+    los_rows = df[df[nlos_column] == '0'].sample(n=50000, random_state=np.random.RandomState())
+    sampled_df = pd.concat([nlos_rows, los_rows])
+    sampled_df.to_csv('processed_data/balanced_data.csv', index=False)
+
+    print("\nBalancing completed. 50,000 NLOS and 50,000 LOS measurements have been randomly selected"
+          "and saved in 'processed_data/balanced_data.csv.")
 
 
 def get_coordinate_list(filepath, col, type):
@@ -67,5 +90,29 @@ def get_nlos_label_list(filepath, col):
     return alist
 
 
+if __name__ == '__main__':
+    # extracts only the necessary columns from the raw data and creates a new csv
+    extract_raw('smartLoc_data/Berlin_PotsdamerPlatz/RXM-RAWX.csv',
+                'processed_data/PotsdamerPlatz.csv',
+                [28, 29, 33])    # cno, pseudorange std, NLOS label
 
+    extract_raw('smartLoc_data/Berlin_Gendarmenmarkt/RXM-RAWX.csv',
+                'processed_data/Gendarmenmarkt.csv',
+                [28, 29, 33])    # cno, pseudorange std, NLOS label
 
+    extract_raw('smartLoc_data/Frankfurt_MainTower/RXM-RAWX.csv',
+                'processed_data/mainTower.csv',
+                [28, 29, 33])    # cno, pseudorange std, NLOS label
+
+    extract_raw('smartLoc_data/Frankfurt_WestendTower/RXM-RAWX.csv',
+                'processed_data/westTower.csv',
+                [28, 29, 33])    # cno, pseudorange std, NLOS label
+
+    # combine the extracted subsets into a full subset
+    merge_csv(['processed_data/PotsdamerPlatz.csv',
+               'processed_data/Gendarmenmarkt.csv',
+               'processed_data/mainTower.csv',
+               'processed_data/westTower.csv'])
+
+    # randomly select 50,000 NLOS and 50,000 LOS measurements from the full dataset
+    balance_data('processed_data/merged.csv')
