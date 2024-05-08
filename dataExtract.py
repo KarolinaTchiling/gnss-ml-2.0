@@ -27,15 +27,15 @@ def extract_raw(in_filepath, out_filepath, col_list):
     print("\nExtraction completed. The selected columns have been saved to " + out_filepath)
 
 
-def merge_csv(file_list):
+def merge_csv(file_list, out_filepath):
     dataframes = []
     for file in file_list:
         df = pd.read_csv(file)
         dataframes.append(df)
     combined_df = pd.concat(dataframes, ignore_index=True)
-    combined_df.to_csv('processed_data/merged.csv', index=False)
+    combined_df.to_csv(out_filepath, index=False)
 
-    print("\nMerge completed. The selected columns have been saved to 'processed_data/merged.csv.")
+    print("\nMerge completed. The dataset has been saved to " + out_filepath)
 
 
 def balance_data(file):
@@ -70,28 +70,9 @@ def get_coordinate_list(filepath, col, type):
     return alist
 
 
-def get_nlos_label_list(filepath, col):
-    """
-    Extracts the NLOS labels from a csv and map them to the label names, store in a list
-    :param filepath: path of CSV
-    :param col: The location of NLOS labels within the csv
-    :return: List of signal labels
-    """
-    alist = []
-    with open(filepath, "r", newline="") as file:
-        reader = csv.reader(file, delimiter=",")
-        for row in reader:
-            if row[col] == '0':
-                alist.append('LOS')
-            elif row[col] == '1':
-                alist.append('NLOS')
-            elif row[col] == '#' :
-                alist.append('N/A')
-    return alist
-
-
 if __name__ == '__main__':
-    # extracts only the necessary columns from the raw data and creates a new csv
+
+    # Extracting the features from each dataset ---------------------------------------------------------------------
     extract_raw('smartLoc_data/Berlin_PotsdamerPlatz/RXM-RAWX.csv',
                 'processed_data/PotsdamerPlatz.csv',
                 [28, 29, 33])    # cno, pseudorange std, NLOS label
@@ -108,11 +89,38 @@ if __name__ == '__main__':
                 'processed_data/westTower.csv',
                 [28, 29, 33])    # cno, pseudorange std, NLOS label
 
-    # combine the extracted subsets into a full subset
+    # combine the extracted feature subsets into a full subset
     merge_csv(['processed_data/PotsdamerPlatz.csv',
                'processed_data/Gendarmenmarkt.csv',
                'processed_data/mainTower.csv',
-               'processed_data/westTower.csv'])
+               'processed_data/westTower.csv'], 'processed_data/merge.csv')
 
     # randomly select 50,000 NLOS and 50,000 LOS measurements from the full dataset
     balance_data('processed_data/merged.csv')
+
+    # extracting the coordinates for mapping -------------------------------------------------------------------------
+    extract_raw('smartLoc_data/Berlin_PotsdamerPlatz/RXM-RAWX.csv',
+                'mapping_data/PotsdamerPlatz-coordinates.csv',
+                [2, 4, 33])  # long, lat, NLOS label
+
+    extract_raw('smartLoc_data/Berlin_Gendarmenmarkt/RXM-RAWX.csv',
+                'mapping_data/Gendarmenmarkt-coordinates.csv',
+                [2, 4, 33])  # long, lat, NLOS label
+
+    extract_raw('smartLoc_data/Frankfurt_MainTower/RXM-RAWX.csv',
+                'mapping_data/MainTower-coordinates.csv',
+                [2, 4, 33])  # long, lat, NLOS label
+
+    extract_raw('smartLoc_data/Frankfurt_WestendTower/RXM-RAWX.csv',
+                'mapping_data/WestendTower-coordinates.csv',
+                [2, 4, 33])  # long, lat, NLOS label
+
+    # combining the berlin datasets
+    merge_csv(['mapping_data/PotsdamerPlatz-coordinates.csv',
+               'mapping_data/Gendarmenmarkt-coordinates.csv'], 'mapping_data/berlin.csv')
+
+    # combining the frankfurt datasets
+    merge_csv(['mapping_data/MainTower-coordinates.csv',
+               'mapping_data/WestendTower-coordinates.csv'], 'mapping_data/frankfurt.csv')
+
+
