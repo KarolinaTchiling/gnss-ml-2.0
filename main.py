@@ -46,85 +46,55 @@ def main():
     print("\nTesting Set - " + str(((len(y_test)) / len(df)) * 100) + "%  (" + str(len(y_test)) + " data points)\n"
           + X_test.head().to_string()), print(y_test)
 
-    # # CROSS VALIDATION  ---------------------------------------------------------------------------------------
-    #
-    # print("\nRFC Cross Validation ------------------------------------------\n")
-    # rfc = RandomForestClassifier(n_estimators=100, random_state=42)                 # initialize the model
-    #
-    # # training set / cv = validation set  (70/4 = 17.5% validation and 52.5% training)
-    # scores = cross_val_score(rfc, X_train, y_train, cv=4)                           # compute cross validation score
-    #
-    # print(scores)
-    # print("%0.3f avg accuracy with a standard deviation of %0.3f" % (scores.mean(), scores.std()))
-    #
-    # # plot the cross validation box plot
-    # plt.boxplot(scores, patch_artist=True)
-    # plt.title('Cross-Validation Score Distribution')
-    # plt.ylabel('Accuracy')
-    # plt.xticks([1], ['Random Forest'])
-    # plt.show()
-    #
-    # # learning curve output
-    #
-    # # Accuracy learning curve
-    # train_sizes, train_scores, validation_scores = learning_curve(rfc, X_train, y_train,
-    #                                                               train_sizes=np.linspace(0.1, 1.0, 10),
-    #                                                                cv=5, scoring='accuracy')
-    # Loss learning curve
-    # train_sizes, train_scores, validation_scores = learning_curve(rfc, X_train, y_train,
-    #                                                               train_sizes=np.linspace(0.1, 1.0, 10),
-    #                                                               cv=5, scoring='neg_log_loss')
+    # CROSS VALIDATION  ---------------------------------------------------------------------------------------
 
-    # # plot the learning curve
-    # disp = LearningCurveDisplay(
-    #     train_sizes=train_sizes,
-    #     train_scores=train_scores,
-    #     test_scores=validation_scores,
-    #     score_name="accuracy"
-    # )
-    # disp.plot()
-    # plt.show()
+    print("\nRFC Cross Validation ------------------------------------------\n")
+    rfc = RandomForestClassifier(n_estimators=100, random_state=42)                 # initialize the model
 
-    # ENTIRE ML TRAINING AND MODELING ---------------------------------------------------------------------------------
+    # training set / cv = validation set  (70/4 = 17.5% validation and 52.5% training)
+    fold = 4
+    scores = cross_val_score(rfc, X_train, y_train, cv=fold)                  # compute cross validation score
+
+    myplt.cross_val_plot(scores, fold)
+
+    myplt.learning_curve_plot(rfc, X_train, y_train, fold, 'accuracy', "Performance Learning Curve")
+    myplt.learning_curve_plot(rfc, X_train, y_train, fold, 'neg_log_loss', "Optimization Learning Curve")
+
+    # ML TESTING ------------------------------------------------------------------------------------------------------
 
     # train random forest classifier
     rfc = RandomForestClassifier(n_estimators=100, random_state=42)  # initialize the model
     rfc.fit(X_train, y_train)  # train the model
-    y_pred = rfc.predict(X_test)  # run the model
+    # y_pred = rfc.predict(X_test)  # standard run of the model (0.51 threshold)
 
-    # y_scores = rfc.predict_proba(X_test)[:, 1]
+    threshold = 0.5
+    predicted_prob = rfc.predict_proba(X_test)
+    y_pred_threshold = (predicted_prob[:, 1] >= threshold).astype('int')
 
-    rfr = RandomForestRegressor(n_estimators=100, random_state=42)
-    rfr.fit(X_train, y_train)  # train the model
-    y_pred2 = rfr.predict(X_test)  # run the model
-
-    # --- classifier uses a threshold of 0.51
-    threshold = 0.51
-    y_pred2_binary = (y_pred2 >= threshold).astype(int)
 
     print("\nRFC Outputs ------------------------------------------\n")
-    print(f"Given a threshold of: {threshold}")
 
-    # False positives and negative
-    cm = confusion_matrix(y_test, y_pred2_binary)
-    fp = cm[0][1]; tn = cm[0][0]; tp = cm[1][1]; fn = cm[1][0]
-    # Calculate the false positive rate (FPR)
+    print(f"Given a threshold of: {threshold}\n")
+
+    # False positives and negatives
+    cm = confusion_matrix(y_test, y_pred_threshold)
+    tn, fp, fn, tp = cm.ravel()
     fpr = fp / (tn + fp)
     fnr = fn / (fn + tp)
-    print(f"False Positive Rate: {fpr:.2f}")
-    print(f"False Negative Rate: {fnr:.2f}")
+    print(f"False Positive Rate: {fpr:.3f}")
+    print(f"False Negative Rate: {fnr:.3f}")
 
     # Accuracy
-    print("Classifier Accuracy:", accuracy_score(y_test, y_pred))
-    print("Regressor Accuracy:", accuracy_score(y_test, y_pred2_binary))
+    print(f"Classifier Accuracy: {accuracy_score(y_test, y_pred_threshold):.4f}")
 
-    # # Classification report
-    print("\nClassification Report:")
-    print(classification_report(y_test, y_pred2_binary))
+    # Classification report
+    print("\
+    nClassification Report:")
+    print(classification_report(y_test, y_pred_threshold))
 
     # Threshold Plots
-    # myplt.threshold_plot(y_pred2, y_test)
-    # myplt.false_negative_plot(y_pred2, y_test)
+    myplt.threshold_plot((predicted_prob[:, 1]), y_test)
+    myplt.false_negative_plot((predicted_prob[:, 1]), y_test)
 
 
 if __name__ == '__main__':
