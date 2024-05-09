@@ -1,32 +1,76 @@
-import dataExtract as de
+
 import plotly.express as px
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 
-def map_track():
-    """
-    Maps the dataset track and signal type (NLOS and LOS).
-    :return:None
-    """
-    de.extract_raw('smartLoc_data/Berlin_PotsdamerPlatz/RXM-RAWX.csv',
-                   'proccessed_data/PotsdamerPlatz-coordinates.csv',
-                   [2, 4, 33])  # long, lat, NLOS label
+def threshold_plot(y_pred,y_test):
+    thresholds = np.linspace(0.3, 0.7, 50)  # 50 points from 0 to 1
+    # Initialize an empty list to store accuracies
+    accuracies = []
 
-    df = pd.read_csv('proccessed_data/PotsdamerPlatz-coordinates.csv')
-    df.columns = ['Longitude', 'Latitude', 'State']
-    df['Longitude'] = df['Longitude'].astype(float)
-    df['Latitude'] = df['Latitude'].astype(float)
-    df['State'] = df['State'].astype(int)
-    df['Signal'] = de.get_nlos_label_list('proccessed_data/PotsdamerPlatz-coordinates.csv', 2)
+    for threshold in thresholds:
+        binary_values = (y_pred >= threshold).astype(int)
+        accuracy = accuracy_score(y_test, binary_values)
+        accuracies.append(accuracy)
 
-    # print(df.head())
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    plt.plot(thresholds, accuracies, linestyle='-', color='blue', linewidth=1.5)
+    plt.title('Classifier Accuracy vs. Threshold')
+    plt.xlabel('Threshold value')
+    plt.ylabel('Classification accuracy (%)')
+    plt.grid(True)
+    plt.show()
 
-    fig = px.scatter_mapbox(df, lat='Latitude', lon='Longitude',
-                            hover_data='Signal', color='State', color_continuous_scale=['dodgerblue', 'orangered'],
-                            title="PotsdamerPlatz, Berlin Track with Labeled NLOS",
-                            zoom=15, height=850, mapbox_style="open-street-map")
 
-    fig.update_traces(marker=dict(size=8))
-    fig.show()
+def false_positive_plot(y_pred, y_test):
+    thresholds = np.linspace(0.3, 0.7, 50)  # 50 points from 0 to 1
+    # Initialize an empty list to store accuracies
+    fprs = []
+
+    for threshold in thresholds:
+        binary_values = (y_pred >= threshold).astype(int)
+        cm = confusion_matrix(y_test, binary_values)
+        fp = cm[0][1]
+        tn = cm[0][0]
+        # Calculate the false positive rate (FPR)
+        fpr = fp / (tn + fp)
+        fprs.append(fpr)
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    plt.plot(thresholds, fprs, linestyle='-', color='blue', linewidth=1.5)
+    plt.title('False Positive vs. Threshold')
+    plt.xlabel('Threshold value')
+    plt.ylabel('False positive (%)')
+    plt.grid(True)
+    plt.show()
+
+
+def false_negative_plot(y_pred, y_test):
+    thresholds = np.linspace(0.3, 0.7, 50)  # 50 points from 0 to 1
+    # Initialize an empty list to store accuracies
+    fnrs = []
+
+    for threshold in thresholds:
+        binary_values = (y_pred >= threshold).astype(int)
+        cm = confusion_matrix(y_test, binary_values)
+        tp = cm[1][1]
+        fn = cm[1][0]
+        # Calculate the false negative rate (FNR)
+        fnr = fn / (fn + tp) if (fn + tp) > 0 else 0
+        fnrs.append(fnr)
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    plt.plot(thresholds, fnrs, linestyle='-', color='blue', linewidth=1.5)
+    plt.title('False Negative vs. Threshold')
+    plt.xlabel('Threshold value')
+    plt.ylabel('False Negative (%)')
+    plt.grid(True)
+    plt.show()
 
 
