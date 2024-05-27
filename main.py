@@ -16,14 +16,15 @@ def main():
     # DATA EXTRACTION -------------------------------------------------------------------------------------------------
 
     # creates a dataframe from csv and renames columns
-    df = pd.read_csv('processed_data/balanced_data.csv')
+    df = pd.read_csv('balanced_data.csv')
     df = df.astype(float)
-    df.columns = ['cno', 'prStdev', 'NLOS']
+    df.columns = ['elevation', 'azimuth', 'cno', 'prStdev', 'NLOS']
     print("Dataset:\n" + df.head().to_string())
 
     # DATA PREPROCESSING -----------------------------------------------------------------------------------------------
 
-    X = df[['cno', 'prStdev']]          # isolate features = X
+    # X = df[['elevation', 'azimuth', 'cno', 'prStdev']]          # isolate features = X
+    X = df[['elevation', 'cno', 'prStdev']]  # isolate features = X
     print("\nFeatures:"), print(X)
     y = df[['NLOS']]                    # isolate target = y
     print("\nTarget:"), print(y)
