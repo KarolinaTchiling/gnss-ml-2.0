@@ -82,10 +82,10 @@ def balance_data(file):
 
     # Combine the sampled rows into a new DataFrame
     sampled_df = pd.concat([nlos_rows, los_rows])
-    sampled_df.to_csv('processed_data/balanced_data.csv', index=False)
+    sampled_df.to_csv('balanced_data.csv', index=False)
 
     print("\nBalancing completed. 50,000 NLOS and 50,000 LOS measurements have been randomly selected"
-          " and saved in 'processed_data/balanced_data.csv.'")
+          " and saved in 'balanced_data.csv.'")
 
 
 def get_coordinate_list(filepath, col, type):
@@ -201,7 +201,6 @@ def create_ml_data():
 
 
 if __name__ == '__main__':
-
     # create_mapping_data()
     create_ml_data()
 
