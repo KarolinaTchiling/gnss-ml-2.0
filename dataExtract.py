@@ -67,7 +67,7 @@ def merge_csv(file_list, out_filepath):
     print("\nMerge completed. The dataset has been saved to " + out_filepath)
 
 
-def balance_data(file):
+def balance_data(file, outfile):
     df = pd.read_csv(file)
     df = df.dropna()    # Drop rows with any missing data (elevation, azimuth)
     nlos_column = 'NLOS (0 == no, 1 == yes, # == No Information)'
@@ -82,10 +82,11 @@ def balance_data(file):
 
     # Combine the sampled rows into a new DataFrame
     sampled_df = pd.concat([nlos_rows, los_rows])
-    sampled_df.to_csv('balanced_data.csv', index=False)
+    sampled_df.to_csv(outfile, index=False)
 
-    print("\nBalancing completed. 50,000 NLOS and 50,000 LOS measurements have been randomly selected"
-          " and saved in 'balanced_data.csv.'")
+    print(f"\nBalancing completed. 50,000 NLOS and 50,000 LOS measurements have been randomly selected"
+          f" and saved in {outfile}")
+
 
 
 def get_coordinate_list(filepath, col, type):
@@ -106,6 +107,53 @@ def get_coordinate_list(filepath, col, type):
     alist = alist[1:]
     alist = [type(item) for item in alist]
     return alist
+
+
+def cal_difference_from_azimuth(heading, azimuth):
+    if pd.isna(heading) or pd.isna(azimuth):
+        return None
+    difference = abs(heading - azimuth)
+    if difference > 180:
+        difference = 360 - difference
+    acute_angle = min(difference, 180 - difference)
+    return acute_angle
+
+
+def get_angles(heading_file, elevation_azimuth_file, outfile):
+    raw_df = pd.read_csv(heading_file,  delimiter=';')
+    angles_df = pd.read_csv(elevation_azimuth_file,  delimiter=',')
+
+    heading = raw_df[["Heading (0° = East, counterclockwise) - (GT Heading) [rad]"]]
+    heading_df = heading.copy()
+
+    heading_df["Heading (0° = East, counterclockwise) - (GT Heading) [degrees]"] = (
+        np.degrees(heading_df["Heading (0° = East, counterclockwise) - (GT Heading) [rad]"]))
+    heading_df = heading_df.drop(columns=["Heading (0° = East, counterclockwise) - (GT Heading) [rad]"])
+
+    # combine heading, elevation and azimuth
+    df = pd.concat([heading_df.reset_index(drop=True), angles_df.reset_index(drop=True)], axis=1)
+
+    # Convert heading angle from [-180 - +180] to [0-360]
+    df['Heading (0° = East, counterclockwise) - (GT Heading) [degrees]'] = (
+        df['Heading (0° = East, counterclockwise) - (GT Heading) [degrees]'].apply(lambda x: x + 360 if x < 0 else x))
+
+    # Rotate heading angles 90 degrees to the left to move 0 = North
+    df["Heading (0° = North, counterclockwise)"] = (
+        df["Heading (0° = East, counterclockwise) - (GT Heading) [degrees]"].apply(lambda x: (x - 90) % 360))
+
+    # Convert heading from counterclockwise to clockwise
+    df["heading"] = df["Heading (0° = North, counterclockwise)"].apply(lambda x: (360 - x) % 360)
+
+    diff_df = df[["heading", "azimuth", 'elevation']].copy()
+
+    # Apply the difference function to both columns
+    diff_df['angle'] = diff_df.apply(lambda row: cal_difference_from_azimuth(row['heading'], row['azimuth']), axis=1)
+
+    # Convert the acute angle to the range 0-90
+    diff_df['diff_azimuth'] = diff_df['angle'].apply(lambda x: min(x, 90) if pd.notna(x) else x)
+    diff_df = diff_df.drop(columns=["heading", "azimuth", "angle"])
+
+    diff_df.to_csv(outfile, index=False)
 
 
 def create_mapping_data():
@@ -152,56 +200,70 @@ def create_ml_data():
                 'processed_data/westTower.csv',
                 [28, 29, 33], ";")  # cno, pseudorange std, NLOS label
 
-    # ------ elevation and azimuth angles
+    # ------ elevation and difference of azimuth angles
+
     extract_raw('elevation_data/RXM-RAWX_berlin_potsdamer_platz.csv',
                 'processed_data/PotsdamerPlatz_elevation.csv',
                 [34, 35], ",")  # elevation, azimuth
     add_header_to_csv('processed_data/PotsdamerPlatz_elevation.csv', ["elevation", "azimuth"])
+    get_angles('smartLoc_data/Berlin_PotsdamerPlatz/RXM-RAWX.csv',
+               'processed_data/PotsdamerPlatz_elevation.csv',
+               'processed_data/PotsdamerPlatz_angles.csv')
 
     extract_raw('elevation_data/RXM-RAWX_berlin_gendarmenmarkt.csv',
                 'processed_data/berlin_gendarmenmarkt_elevation.csv',
                 [34, 35], ",")  # elevation, azimuth
     add_header_to_csv('processed_data/berlin_gendarmenmarkt_elevation.csv', ["elevation", "azimuth"])
+    get_angles('smartLoc_data/Berlin_Gendarmenmarkt/RXM-RAWX.csv',
+               'processed_data/berlin_gendarmenmarkt_elevation.csv',
+               'processed_data/berlin_gendarmenmarkt_angles.csv')
 
     extract_raw('elevation_data/RXM-RAWX_frankfurt1_maintower.csv',
                 'processed_data/frankfurt1_maintower_elevation.csv',
                 [34, 35], ",")  # elevation, azimuth
     add_header_to_csv('processed_data/frankfurt1_maintower_elevation.csv', ["elevation", "azimuth"])
+    get_angles('smartLoc_data/Frankfurt_MainTower/RXM-RAWX.csv',
+               'processed_data/frankfurt1_maintower_elevation.csv',
+               'processed_data/frankfurt1_maintower_angles.csv')
 
     extract_raw('elevation_data/RXM-RAWX_frankfurt2_westendtower.csv',
                 'processed_data/frankfurt2_westendtower_elevation.csv',
                 [34, 35], ",")  # elevation, azimuth
     add_header_to_csv('processed_data/frankfurt2_westendtower_elevation.csv', ["elevation", "azimuth"])
+    get_angles('smartLoc_data/Frankfurt_WestendTower/RXM-RAWX.csv',
+               'processed_data/frankfurt2_westendtower_elevation.csv',
+               'processed_data/frankfurt2_westendtower_angles.csv')
 
-    # combine the cno, pr std, nlos, elevation and azimuth --------------------------------------------------
-    merge_elevation_date("processed_data/PotsdamerPlatz_elevation.csv",
+    # combine the cno, pr std, nlos, elevation and diff_azimuth --------------------------------------------------
+    merge_elevation_date("processed_data/PotsdamerPlatz_angles.csv",
                          "processed_data/PotsdamerPlatz.csv",
                          "processed_data/PotsdamerPlatz_full.csv")
 
-    merge_elevation_date("processed_data/berlin_gendarmenmarkt_elevation.csv",
+    merge_elevation_date("processed_data/berlin_gendarmenmarkt_angles.csv",
                          "processed_data/Gendarmenmarkt.csv",
                          "processed_data/Gendarmenmarkt_full.csv")
 
-    merge_elevation_date("processed_data/frankfurt1_maintower_elevation.csv",
+    merge_elevation_date("processed_data/frankfurt1_maintower_angles.csv",
                          "processed_data/mainTower.csv",
                          "processed_data/mainTower_full.csv")
 
-    merge_elevation_date("processed_data/frankfurt2_westendtower_elevation.csv",
+    merge_elevation_date("processed_data/frankfurt2_westendtower_angles.csv",
                          "processed_data/westTower.csv",
                          "processed_data/westTower_full.csv")
 
-    # combine the extracted feature subsets into a full subset ----------------------------------------------
+    # # combine the extracted feature subsets into a full subset ----------------------------------------------
     merge_csv(['processed_data/PotsdamerPlatz_full.csv',
                'processed_data/Gendarmenmarkt_full.csv',
                'processed_data/mainTower_full.csv',
                'processed_data/westTower_full.csv'], 'processed_data/merge.csv')
 
     # randomly select 50,000 NLOS and 50,000 LOS measurements from the full dataset --------------------------
-    balance_data('processed_data/merge.csv')
+    balance_data('processed_data/merge.csv', 'balanced_data.csv')
 
 
 if __name__ == '__main__':
     # create_mapping_data()
     create_ml_data()
+
 
 
