@@ -4,6 +4,14 @@
 ### GNSS Dataset
 Data is available from here: https://www.tu-chemnitz.de/projekt/smartLoc/gnss_dataset.html.en#Datasets
 
+### Project Setup
+1) Clone the repository
+2) Setup virtual environment and install necessary libraries
+3) Run main.py (I used python 3.12)
+   - All raw data and processed data has been included in this repo
+   - Raw data was processed in dataExtract.py
+
+    
 ### Setup a virtual environment
 
 Following commands are for Windows. For macOS/Unix and additional information: 
@@ -16,23 +24,6 @@ To create a virtual environment, go to your project’s directory and run the fo
 Activate a virtual environment:
 	
 	.venv\Scripts\activate
-
-###### _Side Note:_
-
-###### If using Powershell and you have the following error:
-
-    \.venv\Scripts\Activate.ps1 cannot be loaded because running scripts is disabled on this system. 
-
-###### Enter this command:
-
-    Set-ExecutionPolicy Unrestricted -Scope Process
-
-To confirm the virtual environment is activated:
-
-	where python
-    # While the virtual environment is active, the above command will output a 
-    # filepath that includes the .venv directory, by ending with the following:
-	.venv\Scripts\python
 
 
 Prepare pip and make sure it is up-to-date:
