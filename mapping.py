@@ -56,7 +56,7 @@ def map_track(file, title):
     df['State'] = get_state_label_list(file, 2)
     df['Signal'] = get_nlos_label_list(file, 2)
 
-    print(df.head(20))
+    # print(df.head(20))
 
     fig = px.scatter_mapbox(df, lat='Latitude', lon='Longitude',
                             hover_data='Signal', color='State', color_continuous_scale=['dodgerblue', 'white', 'orangered'],
@@ -67,8 +67,9 @@ def map_track(file, title):
 
 
 if __name__ == '__main__':
-    map_track('mapping_data/berlin.csv',
-              "PotsdamerPlatz and Gendarmenmarkt, Berlin Tracks with Labeled NLOS")
-    map_track('mapping_data/frankfurt.csv',
-              "Main and West Tower, Frankfurt Tracks with Labeled NLOS")
+    # map_track('mapping_data/berlin.csv',
+    #           "PotsdamerPlatz and Gendarmenmarkt, Berlin Tracks with Labeled NLOS")
+    # map_track('mapping_data/frankfurt.csv',
+    #           "Main and West Tower, Frankfurt Tracks with Labeled NLOS")
 
+    map_track("mapping_data/test.csv", "")

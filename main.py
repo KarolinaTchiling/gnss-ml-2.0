@@ -46,7 +46,7 @@ def main():
     print("\nTesting Set - " + str(((len(y_test)) / len(df)) * 100) + "%  (" + str(len(y_test)) + " data points)\n"
           + X_test.head().to_string()), print(y_test)
 
-    # CROSS VALIDATION  ---------------------------------------------------------------------------------------
+    # # CROSS VALIDATION  ---------------------------------------------------------------------------------------
 
     print("\nRFC Cross Validation ------------------------------------------\n")
     rfc = RandomForestClassifier(n_estimators=100, random_state=42)                 # initialize the model
@@ -60,41 +60,41 @@ def main():
     myplt.learning_curve_plot(rfc, X_train, y_train, fold, 'accuracy', "Performance Learning Curve")
     myplt.learning_curve_plot(rfc, X_train, y_train, fold, 'neg_log_loss', "Optimization Learning Curve")
 
-    # # ML TESTING ------------------------------------------------------------------------------------------------------
-    #
-    # # train random forest classifier
-    # rfc = RandomForestClassifier(n_estimators=100, random_state=42)  # initialize the model
-    # rfc.fit(X_train, y_train)  # train the model
-    # # y_pred = rfc.predict(X_test)  # standard run of the model (0.51 threshold)
-    #
-    # threshold = 0.5
-    # predicted_prob = rfc.predict_proba(X_test)
-    # y_pred_threshold = (predicted_prob[:, 1] >= threshold).astype('int')
-    #
-    #
-    # print("\nRFC Outputs ------------------------------------------\n")
-    #
-    # print(f"Given a threshold of: {threshold}\n")
-    #
-    # # False positives and negatives
-    # cm = confusion_matrix(y_test, y_pred_threshold)
-    # tn, fp, fn, tp = cm.ravel()
-    # fpr = fp / (tn + fp)
-    # fnr = fn / (fn + tp)
-    # print(f"False Positive Rate: {fpr:.3f}")
-    # print(f"False Negative Rate: {fnr:.3f}")
-    #
-    # # Accuracy
-    # print(f"Classifier Accuracy: {accuracy_score(y_test, y_pred_threshold):.4f}")
-    #
-    # # Classification report
-    # print("\
-    # nClassification Report:")
-    # print(classification_report(y_test, y_pred_threshold))
-    #
-    # # Threshold Plots
-    # myplt.threshold_plot((predicted_prob[:, 1]), y_test)
-    # myplt.false_negative_plot((predicted_prob[:, 1]), y_test)
+    # ML TESTING ------------------------------------------------------------------------------------------------------
+
+    # train random forest classifier
+    rfc = RandomForestClassifier(n_estimators=100, random_state=42)  # initialize the model
+    rfc.fit(X_train, y_train)  # train the model
+    # y_pred = rfc.predict(X_test)  # standard run of the model (0.51 threshold)
+
+    threshold = 0.5
+    predicted_prob = rfc.predict_proba(X_test)
+    y_pred_threshold = (predicted_prob[:, 1] >= threshold).astype('int')
+
+
+    print("\nRFC Outputs ------------------------------------------\n")
+
+    print(f"Given a threshold of: {threshold}\n")
+
+    # False positives and negatives
+    cm = confusion_matrix(y_test, y_pred_threshold)
+    tn, fp, fn, tp = cm.ravel()
+    fpr = fp / (tn + fp)
+    fnr = fn / (fn + tp)
+    print(f"False Positive Rate: {fpr:.3f}")
+    print(f"False Negative Rate: {fnr:.3f}")
+
+    # Accuracy
+    print(f"Classifier Accuracy: {accuracy_score(y_test, y_pred_threshold):.4f}")
+
+    # Classification report
+    print("\
+    nClassification Report:")
+    print(classification_report(y_test, y_pred_threshold))
+
+    # Threshold Plots
+    myplt.threshold_plot((predicted_prob[:, 1]), y_test)
+    myplt.false_negative_plot((predicted_prob[:, 1]), y_test)
 
 
 if __name__ == '__main__':
